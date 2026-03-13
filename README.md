@@ -1,8 +1,58 @@
 # RevitJournalAbuser
 
-Library contains 4 classes to abuse widely known loophole Journals replaying in Autodesk Revit.
+A small utility library that leverages the Autodesk Revit *Journal* mechanism to execute actions that are not exposed through the official Revit API.
 
-If for some reason you never heard of it here's a quick rundown:
-Each Revit session creates Journal file that logs every action that happens in this session. If you start new Revit session with such Journal passed as an argument, Revit will replay all actions from this Journal. Basically it's just a debug tool to recreate conditions that caused an error.
-Luckily for us we can utilise this tool to execute various commands that are unavailable for us from API.
-Under the hood Journal file use modified VB syntax.
+The library provides helper classes for generating Journal scripts, executing them in a separate Revit session, and safely handling temporary resources.
+
+## What is a Revit Journal?
+
+Each Revit session generates a **Journal file** that records every action performed during that session.
+
+These files are primarily intended for debugging. When Revit is launched with a Journal file as a startup argument, it **replays the recorded actions automatically**.
+
+Internally, Journal files use a syntax similar to modified VB scripting.
+
+This library leverages that mechanism to programmatically execute commands that are otherwise inaccessible through the Revit API (for example, retrieving Synchronization history).
+
+
+## Core Classes
+
+### Journal
+Creates and writes a Journal script that will later be executed by Revit.
+```c#
+using Journal journal = new(scriptPath);
+```
+
+### TempDirectory
+Creates an isolated temporary working directory (inside the user's `Temp` folder) where Journal files and generated resources are stored.
+
+The directory is automatically cleaned up when disposed.
+```c#
+public class ReportsTempDirectory: TempDirectory
+{
+    private string ReportsDirectory => Path.Combine(Dir, "Reports");    
+    private IEnumerable<string> Reports => Directory.EnumerateFiles(ReportsDirectory);
+    public ReportsTempDirectory (IEnumerable<string> files)
+    {
+        Directory.CreateDirectory(ReportsDirectory);        
+        string[] fileScripts = files
+            .Select(file => file.CreatePartitionHistory(ReportsDirectory))
+            .ToArray();        
+        using Journal journal = new(Script, fileScripts);
+    }
+}
+```
+
+### Abuser
+Launches a new Revit process with the generated Journal script.
+```c#
+using Abuser abuser = new(2023, tempDirectory);
+abuser.RunJournalScript();
+abuser.WaitForExit();
+```
+
+### Scripts
+Contains predefined Journal script templates for common tasks.
+```c#
+string scriptPart = Scripts.CreatePartitionHistory(filePath, reportsDirectory)
+```
