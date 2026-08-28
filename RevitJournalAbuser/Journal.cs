@@ -51,7 +51,7 @@ public class Journal: IDisposable
     {
         _stringBuilder.AppendLine(Footer);
         _completed = true;
-        File.WriteAllText(_scriptFilePath, _stringBuilder.ToString());
+        File.WriteAllText(_scriptFilePath, _stringBuilder.ToString(), Encoding.GetEncoding(1251));
         _stringBuilder.Clear();
     }
 
