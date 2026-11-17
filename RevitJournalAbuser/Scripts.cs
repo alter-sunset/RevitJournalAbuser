@@ -51,7 +51,24 @@ public static class Scripts
     {
         buttonName = buttonName.Split('\n')[0]; // Have to use only first line of a name
         return $"""
+                
+                '
                 Jrn.RibbonEvent "Execute external command:CustomCtrl_%CustomCtrl_%{tabName}%{panelName}%{buttonName}:{fullPathToCommand}"
+                """;
+    }
+    
+    /// <summary>
+    /// Generate script to execute an ExternalCommand (e.g. custom addon)
+    /// </summary>
+    /// <param name="guid">GUID of addin command</param>
+    /// <param name="fullPathToCommand">Full path to Class associated with the Button</param>
+    /// <returns>Script is string format</returns>
+    public static string RunExternalCommandButton(string guid, string fullPathToCommand)
+    {
+        return $"""
+                
+                '
+                Jrn.RibbonEvent "Execute external command:{guid}:{fullPathToCommand}"
                 """;
     }
 }
