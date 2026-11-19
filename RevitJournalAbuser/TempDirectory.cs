@@ -24,6 +24,13 @@ public abstract class TempDirectory : IDisposable
         Dir = Path.Combine(tempDir, "RevitJournalAbuser");
         Directory.CreateDirectory(Dir);
     }
+    
+    protected TempDirectory(string tempDirectoryName)
+    {
+        string tempDir = Path.GetTempPath();
+        Dir = Path.Combine(tempDir, tempDirectoryName);
+        Directory.CreateDirectory(Dir);
+    }
 
     /// <summary>
     /// Create SubDirectory inside main temp directory
